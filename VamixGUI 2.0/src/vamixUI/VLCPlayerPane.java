@@ -24,6 +24,7 @@ public class VLCPlayerPane extends JPanel {
 	private static VLCPlayerPane _instance = null;
 	private static EmbeddedMediaPlayerComponent _eMPC;
 	private String _mediaPath = "";
+	private int _totalPlayTime = 0;
 	
 	/**
 	 * Private constructor for VLCPlayerPane.
@@ -70,6 +71,17 @@ public class VLCPlayerPane extends JPanel {
 		_mediaPath = absolutePath;
 	}
 	
+	/**
+	 * Sets total play time of the currently
+	 * playing file.
+	 * 
+	 * @param totalPlayTime
+	 */
+	public void setPlayTime(int totalPlayTime) {
+		_totalPlayTime = totalPlayTime;
+		
+	}
+	
 	/*
 	 * The below methods are for interacting with the media player.
 	 */
@@ -87,7 +99,10 @@ public class VLCPlayerPane extends JPanel {
 	 * Start playing media with the given media path.
 	 */
 	public void play() {
+		//Ensure that the player isn't muted.
 		_eMPC.getMediaPlayer().mute(false);
+		
+		//Play from the given mediaPath.
 	    _eMPC.getMediaPlayer().playMedia(_mediaPath);
 	}
 	
@@ -107,6 +122,7 @@ public class VLCPlayerPane extends JPanel {
 	
 	/**
 	 * Add a new listener to the media player.
+	 * 
 	 * @param eL
 	 */
 	public void addMediaEventHandler(MediaPlayerEventListener eL) {
@@ -114,19 +130,11 @@ public class VLCPlayerPane extends JPanel {
 	}
 
 	/**
-	 * Skip media that is currently playing forward.
+	 * Skip media player by the 
+	 * specified amount of milliseconds
+	 * 
+	 * @param time (milliseconds)
 	 */
-	public void skipForward() {
-		_eMPC.getMediaPlayer().skip(5000);
-	}
-
-	/**
-	 * Skip media that is currently playing backward.
-	 */
-	public void skipBackward() {
-		_eMPC.getMediaPlayer().skip(-5000);
-	}
-	
 	public void skip(int time) {
 		_eMPC.getMediaPlayer().skip(time);
 	}
@@ -160,18 +168,7 @@ public class VLCPlayerPane extends JPanel {
 	 * @return
 	 */
 	public int getLength() {
-		//_eMPC.getMediaPlayer().parseMedia();
 		return (int) _eMPC.getMediaPlayer().getLength();
 		
-	}
-
-	public void parseMedia() {
-		// TODO Auto-generated method stub
-		_eMPC.getMediaPlayer().parseMedia();
-	}
-
-	public void setMute(boolean b) {
-		_eMPC.getMediaPlayer().mute(b);
-		//_playerPanel.setMute(false);
 	}
 }

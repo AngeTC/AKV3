@@ -3,9 +3,12 @@ package vamixUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  * Button which opens a file chooser.
@@ -30,14 +33,28 @@ public class FileChooseButton extends JButton {
 				int returnValue = fileChooser.showOpenDialog(null);
 
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					
-					//Play file selected from chooser.
 					File selectedFile = fileChooser.getSelectedFile();
-					VLCPlayerPane.getInstance().setMediaPath(selectedFile.getAbsolutePath());
-					VLCPlayerPane.getInstance().play();
 					
-					//Set play button on VamixGUI as pressed.
-					VamixGUI.getInstance().setPlay();
+					try {
+						//Check if the file is a video/audio file.
+						String type = Files.probeContentType(selectedFile.toPath());
+						if(type.contains("video") || type.contains("audio")) {
+							
+							//Play file selected from chooser.
+							VLCPlayerPane.getInstance().setMediaPath(selectedFile.getAbsolutePath());
+							VLCPlayerPane.getInstance().play();
+							
+							//Set play button on VamixGUI as pressed.
+							VamixGUI.getInstance().setPlay();
+						
+						//Send error if file is invalid.
+						} else {
+							JOptionPane.showMessageDialog(null, "File selected is not a video " +
+									"or audio file. Please select another file.");
+						}
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 		});

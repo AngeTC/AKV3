@@ -70,7 +70,6 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	private static VLCPlayerPane _playerPanel = VLCPlayerPane.getInstance(); 
 
 	private boolean _isMediaLoaded = false;
-	private static boolean _isPlayIcon = true;
 
 	/**
 	 * Private constructor for VamixGUI.
@@ -125,7 +124,6 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 			public void finished(MediaPlayer mediaPlayer) {
 				_playButton.setSelected(false); //Now reset to play button.
 				_isMediaLoaded = false;
-				_isPlayIcon = true;
 				_playerPanel.stop();
 			}
 		});
@@ -229,7 +227,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 			private Timer timePressed = new Timer(100, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
-					_playerPanel.skipForward();
+					_playerPanel.skip(5000);
 				}
 			});
 
@@ -252,7 +250,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 			private Timer timePressed = new Timer(100, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
-					_playerPanel.skipBackward();
+					_playerPanel.skip(-5000);
 				}
 			});
 
@@ -321,9 +319,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 			//Bring up new dialog window which handles downloads.
 			new DownloadHandler(VamixGUI.this);
 		} else if (ae.getSource() == _saveButton) {
-			//TODO testing for now:
-			//_playerPanel.parseMedia();
-			System.out.println(_playerPanel.getLength());
+			//TODO Save feature:
 		}
 	}
 
@@ -346,13 +342,20 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	public void setPlay() {
 		_playButton.setSelected(true);
 		_isMediaLoaded = true;
+		
+		//Must wait a wile
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		_seekBar.setNewTotalLength(_playerPanel.getLength());
-		System.out.println(_playerPanel.getLength());
+		
+		int totalPlayTime = _playerPanel.getLength();
+		
+		_seekBar.setNewTotalLength(totalPlayTime);
+		VLCPlayerPane.getInstance().setPlayTime(totalPlayTime);
+		
+		System.out.println(totalPlayTime);
 	}
 
 	/**

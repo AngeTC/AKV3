@@ -15,29 +15,40 @@ import javax.swing.JProgressBar;
 @SuppressWarnings("serial")
 public class SeekBar extends JProgressBar {
 
+	/**
+	 * Constructor for the SeekBar.
+	 * 
+	 * @param mediaLength
+	 */
 	public SeekBar(int mediaLength) {
-		
+
 		super(0, mediaLength);
-		
+
+		//Add a mouse listener to find and calculate where to transition to on the video/audio.
 		addMouseListener(new MouseAdapter() {            
-		    public void mouseClicked(MouseEvent e) {
+			public void mouseClicked(MouseEvent e) {
 
-		       //Retrieves the mouse position relative to the bar's origin.
-		       int mouseX = e.getX();
+				//Retrieves the mouse position relative to the bar's origin.
+				int mouseX = e.getX();
 
-		       //Computes how far along the mouse is relative to the component width then multiply it by the progress bar's maximum value.
-		       int seekTime = (int)Math.round(((double)mouseX / (double)getWidth()) * getMaximum());
-		       int currentTime = VLCPlayerPane.getInstance().getTime().intValue();
-		       
-		       //Set bar value to the specified seek time.
-		       setValue(seekTime);
-		       
-		       //Skip to the specified seek time.
-		       VLCPlayerPane.getInstance().skip(seekTime - currentTime);
-		  }                                     
+				//Computes how far along the mouse is relative to the component width then multiply it by the progress bar's maximum value.
+				int seekTime = (int)Math.round(((double)mouseX / (double)getWidth()) * getMaximum());
+				int currentTime = VLCPlayerPane.getInstance().getTime().intValue();
+
+				//Set bar value to the specified seek time.
+				setValue(seekTime);
+
+				//Skip to the specified seek time.
+				VLCPlayerPane.getInstance().skip(seekTime - currentTime);
+			}                                     
 		});
 	};
-	
+
+	/**
+	 * Set new maximum value for the seek bar.
+	 * 
+	 * @param newMax
+	 */
 	public void setNewTotalLength(int newMax) {
 		setMaximum(newMax);
 	}

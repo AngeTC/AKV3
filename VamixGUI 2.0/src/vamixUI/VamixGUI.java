@@ -51,7 +51,8 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 
 	private JPanel _botButtonPanel = new JPanel();
 	
-	private JPanel _mediaSliderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
+	private JPanel _mediaSliderPanel = new JPanel(new BorderLayout(10, 10));
+	private SeekBar _seekBar = new SeekBar(0);
 	private JLabel _timeLabel = new JLabel();
 	
 	private JPanel _mediaControlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
@@ -130,18 +131,17 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		});
 
 		//Set size and layout of the bottom button panel.
-		_botButtonPanel.setLayout(new BorderLayout(0,0));
+		_botButtonPanel.setLayout(new BorderLayout(10,10));
 		_botButtonPanel.setPreferredSize(new Dimension(600,70));
 		_botButtonPanel.add(_mediaSliderPanel,BorderLayout.NORTH);
 		_botButtonPanel.add(_mediaControlPanel,BorderLayout.CENTER);
 
-		//Set size of 'seekbar / video slider / timebar / whatever its called' panel.
-		
-		//_mediaSliderPanel.setBackground(Color.RED); //TODO: Remove later
-		
+		//Set size and add the seek bar to the panel.
 		_mediaSliderPanel.setPreferredSize(new Dimension(600,20));
+		_mediaSliderPanel.add(_seekBar, BorderLayout.CENTER);
+		
 		//Add time to the slider panel.
-		_mediaSliderPanel.add(_timeLabel);
+		_mediaSliderPanel.add(_timeLabel, BorderLayout.WEST);
 		
 		//Set size and layout of the media control panel.
 		//(Contains button panel and volume control.)
@@ -200,7 +200,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		_volumeControl.addChangeListener(this);
 		
 		//Set timer component to continuously update the time label:
-		Timer currentTimer = new Timer(10, new ActionListener() {
+		Timer currentTimer = new Timer(100, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//Get current time of media from media player (in milliseconds).
@@ -214,7 +214,10 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 						TimeUnit.MILLISECONDS.toSeconds(mediaTime) - 
 						TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(mediaTime))
 						);
+				
 				_timeLabel.setText(currentTime);
+				
+				_seekBar.setValue(mediaTime.intValue());
 			}
 		});
 		//Start 'time updater' timer.
@@ -223,7 +226,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		//Add listener to fast forward button.
 		_fastFwdButton.addMouseListener(new MouseAdapter() {
 			//Timer to continually skip forward.
-			private Timer timePressed = new Timer(10, new ActionListener() {
+			private Timer timePressed = new Timer(100, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					_playerPanel.skipForward();
@@ -246,7 +249,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		//Add listener to rewind button.
 		_rewindButton.addMouseListener(new MouseAdapter() {
 			//Timer to continually skip backward.
-			private Timer timePressed = new Timer(10, new ActionListener() {
+			private Timer timePressed = new Timer(100, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					_playerPanel.skipBackward();
@@ -289,26 +292,24 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 
 		//If play button pressed:
 		if (ae.getSource() == _playButton) {
-			if (!_isMediaLoaded) {	
-				//If no media has started being played...
-				if (_isPlayIcon) { 	
+			//If no media has started being played...
+			if (!_isMediaLoaded) {		
 					//...play media specified by mediaPath.
-					setPlay();
 					_playerPanel.play();
-				} 
+					setPlay();
+					
 			} else { 
 				//Else toggle pause on the media player.
 				_playerPanel.pause();
 			}
 
-		//If stop button presssed:
+		//If stop button pressed:
 		} else if (ae.getSource() == _stopButton) {
 			//Stop media, while reassigning the appropriate booleans
 			//and resetting the play button.
 			_playerPanel.stop();
 			_playButton.setSelected(false);
 			_isMediaLoaded = false;
-			_isPlayIcon = true;
 			
 		//If mute button pressed:	
 		} else if (ae.getSource() == _muteButton) {
@@ -319,6 +320,10 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		} else if (ae.getSource() == _downloadButton) {
 			//Bring up new dialog window which handles downloads.
 			new DownloadHandler(VamixGUI.this);
+		} else if (ae.getSource() == _saveButton) {
+			//TODO testing for now:
+			//_playerPanel.parseMedia();
+			System.out.println(_playerPanel.getLength());
 		}
 	}
 
@@ -340,8 +345,14 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	 */
 	public void setPlay() {
 		_playButton.setSelected(true);
-		_isPlayIcon = false;
 		_isMediaLoaded = true;
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		_seekBar.setNewTotalLength(_playerPanel.getLength());
+		System.out.println(_playerPanel.getLength());
 	}
 
 	/**

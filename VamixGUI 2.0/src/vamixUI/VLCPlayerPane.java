@@ -87,6 +87,7 @@ public class VLCPlayerPane extends JPanel {
 	 * Start playing media with the given media path.
 	 */
 	public void play() {
+		_eMPC.getMediaPlayer().mute(false);
 	    _eMPC.getMediaPlayer().playMedia(_mediaPath);
 	}
 	
@@ -125,6 +126,10 @@ public class VLCPlayerPane extends JPanel {
 	public void skipBackward() {
 		_eMPC.getMediaPlayer().skip(-5000);
 	}
+	
+	public void skip(int time) {
+		_eMPC.getMediaPlayer().skip(time);
+	}
 
 	/**
 	 * Mute sound of player.
@@ -148,5 +153,25 @@ public class VLCPlayerPane extends JPanel {
 	 */
 	public Long getTime() {
 		return _eMPC.getMediaPlayer().getTime();
+	}
+
+	/**
+	 * Get total time length of the media.
+	 * @return
+	 */
+	public int getLength() {
+		//_eMPC.getMediaPlayer().parseMedia();
+		return (int) _eMPC.getMediaPlayer().getLength();
+		
+	}
+
+	public void parseMedia() {
+		// TODO Auto-generated method stub
+		_eMPC.getMediaPlayer().parseMedia();
+	}
+
+	public void setMute(boolean b) {
+		_eMPC.getMediaPlayer().mute(b);
+		//_playerPanel.setMute(false);
 	}
 }

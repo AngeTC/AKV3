@@ -4,10 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -16,54 +19,55 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-/**
- * Panel used for traversing 
- * through user folders to find 
- * files.
- * 
- * @author kxie094 (?)
- *
- */
-@SuppressWarnings("serial")
 public class DirPane extends JPanel {
 	private final JButton _changeDirButton = new JButton("Change directory");
 	private final JButton _refreshButton = new JButton("Refresh");
 	private final JButton _openButton = new JButton("Open");
 	private File _selectedFile = null;
+	private File _directory = null;
 	
-	public DirPane(final File directory) {
-		// Set layout of panel.
+	public DirPane(File directory) {
+		
+		// set directory
+		_directory = directory;
+		
+		// set layout
 		setLayout(new BorderLayout());
 
 		// Make tree list with all the nodes, and make it into a JTree
-		// JTree tree = new JTree(DirPaneOp.addNodes(null, directory));
 		final JTree tree = new JTree();
 		tree.setModel(new DirTreeModel(new File(System.getProperty("user.dir"))));
 		
-		// Add listener for file selection.
+		// Listener for file selection
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
 
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				// Get selected file from tree.
+				// get selected file
 				TreePath node = e.getPath();
-				_selectedFile = (File)node.getLastPathComponent();
+				File selected = (File)node.getLastPathComponent();
+		
+				TreePath path = e.getNewLeadSelectionPath();
 				
-				TreePath test = e.getNewLeadSelectionPath();
-				String parent = test.getParentPath().toString();
+				// return if path is directory
+				if (path == null) {
+					return;
+				}
+				
+				String parent = path.getParentPath().toString();
 				parent = parent.replace("[", "");
 				parent = parent.replace("]", "");
 				
-				String output = parent + "/" + _selectedFile.toString();
-				 _selectedFile = new File(output);
-				 
-				System.out.println("Selected: " + _selectedFile.toString());
+				String output = parent + "/" + selected.toString();
+				_selectedFile = new File(output);
+				
 			}
 		});
 		
-		// Put JTree into JScrollPane.
+		// Put JTree into JScrollPane
 		JScrollPane scrollpane = new JScrollPane();
 		scrollpane.getViewport().add(tree);
 		add(scrollpane, BorderLayout.CENTER);
@@ -86,7 +90,8 @@ public class DirPane extends JPanel {
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					System.out.println("You chose: " + fc.getSelectedFile().getName());
 					String dirPath = fc.getSelectedFile().getAbsolutePath();
-					tree.setModel(new DirTreeModel(new File(dirPath)));
+					_directory = new File(dirPath);
+					tree.setModel(new DirTreeModel(_directory));
 				}
 				
 			}
@@ -98,34 +103,22 @@ public class DirPane extends JPanel {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				tree.setModel(new DirTreeModel(directory));
+				tree.setModel(new DirTreeModel(_directory));
 				
 			}
 			
 		});
 		
-		// Add listener to open button to open selected file.
+		// open selected file
 		_openButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (_selectedFile != null) {
-					//Testing:
-					try {
-						String type = Files.probeContentType(_selectedFile.toPath());
-						System.out.println("Type of file: " + type);
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					
-					// if file is valid (video or audio) 
-					//TODO: Error Checking needs to be done.
-					
-					VLCPlayerPane.getInstance().setMediaPath(_selectedFile.getAbsolutePath());
-					VLCPlayerPane.getInstance().play();
+					// if file is valid (video or audio)
+					VLCPlayer.getInstance().setMediaPath(_selectedFile.getAbsolutePath());
+					VLCPlayer.getInstance().play();
 					VamixGUI.getInstance().setPlay();
-					System.out.println("WORKED");
 				}	
 			}
 		});

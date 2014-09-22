@@ -3,13 +3,16 @@ package vamixUI;
 import java.io.File;
 import java.util.Vector;
 
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /**
  * Credits to:
  * http://repo.hackerzvoice.net/depot_madchat/ebooks/Oreilly_Nutshells/books/javaenterprise/jfc/ch03_19.htm
+ * Modified some methods.
  */
 public class DirTreeModel implements TreeModel {
 	
@@ -43,21 +46,15 @@ public class DirTreeModel implements TreeModel {
 		return children.length;
 	}
 
+	// Checks if object is not a directory. Used for rendering the icons on the Jtree.
 	@Override
 	public boolean isLeaf(Object node) {
-		//return ((File)node).isFile(); 
-		String[] children = ((File)node).list();
-		if (children == null) {
-		return true;
-		}
-		return false;
+		File file = (File)node;
+		return !file.isDirectory();
 	}
 
 	@Override
-	public void valueForPathChanged(TreePath path, Object newValue) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void valueForPathChanged(TreePath path, Object newValue) {}
 
 	@Override
 	public int getIndexOfChild(Object parent, Object child) {

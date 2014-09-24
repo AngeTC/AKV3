@@ -27,11 +27,12 @@ public class TextPane extends JPanel {
 	
 	//sub sections
 	private JPanel _textOptionPanel = new JPanel();
-	private JPanel _imageOptionPanel = new JPanel();
+	private JPanel _imageAndConfirmPanel = new JPanel();
 	private JPanel _confirmationPanel = new JPanel();
 	private JPanel _spinnerPanel = new JPanel();
 	private JPanel _fontAndColourPanel = new JPanel();
 	private JPanel _scenePanel = new JPanel();
+	private JPanel _imageOptionPanel = new JPanel();
 	
 	// button panel
 	private final JButton _loadButton = new JButton("Load");
@@ -48,15 +49,15 @@ public class TextPane extends JPanel {
 	private final JScrollPane _textScroll = new JScrollPane(_textInput);
 	private final JButton _fontButton = new JButton("Font");
 	private final JButton _colourButton = new JButton("Colour");
-	private final JLabel _durationLabel = new JLabel("Duration:");
+	private final JLabel _durationLabel = new JLabel("Duration (hh:mm:ss)");
 	private final JSpinner _hoursSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner _minsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 59, 1));
 	private final JSpinner _secsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 59, 1));
 	private final JLabel _timeSep1 = new JLabel(":");
 	private final JLabel _timeSep2 = new JLabel(":");
 	// Image section TODO: may remove
-	private final JTextField _inputImage = new JTextField("Image file");
-	private final JButton _chooseImageButton = new JButton("Choose...");
+	private final JTextField _inputImage = new JTextField("Pick an image file to add to video...");
+	private final JButton _chooseImageButton = new JButton("Choose");
 	// Bottom
 	private final JButton _previewTextButton = new JButton("Preview");
 	private final JButton _okButton = new JButton("OK");
@@ -69,6 +70,7 @@ public class TextPane extends JPanel {
 		setLayout(new BorderLayout());
 		
 		// button panel, NORTH
+		_buttonPanel.setLayout(new GridLayout(1,0));
 		_buttonPanel.add(_loadButton);
 		_buttonPanel.add(_saveButton);
 		_buttonPanel.add(_exportButton);
@@ -85,9 +87,14 @@ public class TextPane extends JPanel {
 		_addTextPanel.add(_scenePanel, BorderLayout.NORTH);
 		// Text options
 		_textOptionPanel.setLayout(new BorderLayout());
-		_textOptionPanel.add(_textInput, BorderLayout.CENTER);
-		_textOptionPanel.add(_durationLabel, BorderLayout.SOUTH);
+		_textOptionPanel.add(_textScroll, BorderLayout.CENTER);
+		_fontAndColourPanel.setLayout(new GridLayout(0,1));
+		_fontAndColourPanel.add(_fontButton);
+		_fontAndColourPanel.add(_colourButton);
+		_textOptionPanel.add(_fontAndColourPanel, BorderLayout.EAST);
 		// spinner panel
+		_spinnerPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		_spinnerPanel.add(_durationLabel);
 		_spinnerPanel.add(_hoursSpinner);
 		_spinnerPanel.add(_timeSep1);
 		_spinnerPanel.add(_minsSpinner);
@@ -101,8 +108,21 @@ public class TextPane extends JPanel {
 		
 		_addTextPanel.add(_textOptionPanel, BorderLayout.CENTER);
 		
+		// image and confirm buttons
+		_imageAndConfirmPanel.setLayout(new GridLayout(0,1));
+		_imageOptionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		_imageOptionPanel.add(_inputImage);
+		_imageOptionPanel.add(_chooseImageButton);
+		_confirmationPanel.setLayout(new GridLayout(1,0));
+		_confirmationPanel.add(_previewTextButton);
+		_confirmationPanel.add(_okButton);
+		_imageAndConfirmPanel.add(_imageOptionPanel);
+		_imageAndConfirmPanel.add(_confirmationPanel);
 		
+		_addTextPanel.add(_imageAndConfirmPanel, BorderLayout.SOUTH);
 		_textAndChangesPanel.add(_addTextPanel);
+		
+		//****CHANGES PANEL******
 		_textAndChangesPanel.add(_changesPanel);
 		
 		add(_textAndChangesPanel, BorderLayout.CENTER);

@@ -29,10 +29,11 @@ import javax.swing.tree.TreePath;
  */
 @SuppressWarnings("serial")
 public class DirPane extends JPanel {
-	private final JButton _changeDirButton = new JButton("Change Dir");
+	private final JButton _changeDirButton = new JButton("Change directory");
 	private final JButton _refreshButton = new JButton("Refresh");
 	private final JButton _openButton = new JButton("Open");
 	private File _selectedFile = null;
+	private File _directory = null;
 	
 	public DirPane(final File directory) {
 		// Set layout of panel.
@@ -41,7 +42,7 @@ public class DirPane extends JPanel {
 		// Make tree list with all the nodes, and make it into a JTree
 		// JTree tree = new JTree(DirPaneOp.addNodes(null, directory));
 		final JTree tree = new JTree();
-		tree.setModel(new DirTreeModel(new File(System.getProperty("user.dir"))));
+		tree.setModel(new DirTreeModel(directory));
 		
 		// Add listener for file selection.
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
@@ -51,9 +52,13 @@ public class DirPane extends JPanel {
 				// Get selected file from tree.
 				TreePath node = e.getPath();
 				_selectedFile = (File)node.getLastPathComponent();
+				if (_selectedFile.isDirectory()) {
+					return;
+				}
 				
-				TreePath test = e.getNewLeadSelectionPath();
-				String parent = test.getParentPath().toString();
+				TreePath path = e.getNewLeadSelectionPath();
+				
+				String parent = path.getParentPath().toString();
 				parent = parent.replace("[", "");
 				parent = parent.replace("]", "");
 				
@@ -86,6 +91,7 @@ public class DirPane extends JPanel {
 					System.out.println("You chose: " + fc.getSelectedFile().getName());
 					String dirPath = fc.getSelectedFile().getAbsolutePath();
 					tree.setModel(new DirTreeModel(new File(dirPath)));
+					_directory = new File(dirPath);
 				}
 				
 			}
@@ -97,7 +103,7 @@ public class DirPane extends JPanel {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				tree.setModel(new DirTreeModel(directory));
+				tree.setModel(new DirTreeModel(_directory));
 				
 			}
 			

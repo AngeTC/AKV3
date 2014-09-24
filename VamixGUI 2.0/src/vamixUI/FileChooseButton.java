@@ -11,21 +11,20 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
- * Button which opens a file chooser to
- * play a media file.
+ * Button which opens a file chooser.
  * 
  * @author acas212
  */
 @SuppressWarnings("serial")
 public class FileChooseButton extends JButton { 
-
+	
 	/**
 	 * Constructor of File Choose Button.
 	 */
 	public FileChooseButton(String name) {
 		//Set text on button.
 		setText(name);
-
+		
 		//Add new listener to button to create a new file chooser.
 		this.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent a) {
@@ -35,20 +34,20 @@ public class FileChooseButton extends JButton {
 
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					File selectedFile = fileChooser.getSelectedFile();
-
+					
 					try {
 						//Check if the file is a video/audio file.
 						String type = Files.probeContentType(selectedFile.toPath());
 						if(type.contains("video") || type.contains("audio")) {
-
+							
 							//Play file selected from chooser.
 							VLCPlayerPane.getInstance().setMediaPath(selectedFile.getAbsolutePath());
 							VLCPlayerPane.getInstance().play();
-
+							
 							//Set play button on VamixGUI as pressed.
 							VamixGUI.getInstance().setPlay();
-
-							//Send error if file is invalid.
+						
+						//Send error if file is invalid.
 						} else {
 							JOptionPane.showMessageDialog(null, "File selected is not a video " +
 									"or audio file. Please select another file.");

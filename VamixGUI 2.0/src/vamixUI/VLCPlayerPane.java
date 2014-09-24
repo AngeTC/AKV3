@@ -72,13 +72,6 @@ public class VLCPlayerPane extends JPanel {
 	}
 	
 	/**
-	 * Get path to media for playing.
-	 */
-	public String getMediaPath() {
-		return _mediaPath;
-	}
-	
-	/**
 	 * Sets total play time of the currently
 	 * playing file.
 	 * 
@@ -86,17 +79,6 @@ public class VLCPlayerPane extends JPanel {
 	 */
 	public void setPlayTime(int totalPlayTime) {
 		_totalPlayTime = totalPlayTime;
-		
-	}
-	
-	/**
-	 * Return total play time of the currently
-	 * playing file.
-	 * 
-	 * @return totalPlayTime (milliseconds)
-	 */
-	public int getPlayTime() {
-		return _totalPlayTime;
 		
 	}
 	
@@ -188,5 +170,9 @@ public class VLCPlayerPane extends JPanel {
 	public int getLength() {
 		return (int) _eMPC.getMediaPlayer().getLength();
 		
+	}
+
+	public String getMediaPath() {
+		return _mediaPath;
 	}
 }

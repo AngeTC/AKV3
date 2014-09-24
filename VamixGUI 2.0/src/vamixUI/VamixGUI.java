@@ -40,7 +40,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	private JTabbedPane _tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private DirPane _fileTab = new DirPane(new File(System.getProperty("user.dir")));
 	private AudioPane _audioTab = new AudioPane();
-	private JPanel _textTab = new JPanel();
+	private JPanel _textTab = new TextPane();
 
 	private JPanel _leftPanel = new JPanel();
 	

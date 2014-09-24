@@ -38,14 +38,14 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	private static VamixGUI _guiInstance = null;
 
 	private JTabbedPane _tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-	private JPanel _fileTab = new DirPane(new File(System.getProperty("user.dir")));
-	private JPanel _audioTab = new JPanel();
+	private DirPane _fileTab = new DirPane(new File(System.getProperty("user.dir")));
+	private AudioPane _audioTab = new AudioPane();
 	private JPanel _textTab = new JPanel();
 
 	private JPanel _leftPanel = new JPanel();
 	
 	private JPanel _topButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
-	private JButton _saveButton = new JButton("Save");
+	//private JButton _saveButton = new JButton("Save");
 	private JButton _fileButton = new FileChooseButton("Open File");
 	private JButton _downloadButton = new JButton("Download");
 
@@ -76,7 +76,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	 */
 	private VamixGUI() {
 		super("VAMIX");
-		setSize(935, 625);
+		setSize(1050, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//Disable resizing.
@@ -90,7 +90,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		_leftPanel.setLayout(new BorderLayout(10,10));
 		
 		//Set size and add tabs to tabbedPane.
-		_tabbedPane.setPreferredSize(new Dimension(300, 550));
+		_tabbedPane.setPreferredSize(new Dimension(400, 550));
 		_tabbedPane.add(_fileTab, "Files");
 		_tabbedPane.add(_audioTab, "Audio");
 		_tabbedPane.add(_textTab, "Text");
@@ -102,17 +102,17 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		//Set sizes of the top button panel and its buttons.
 		_topButtonPanel.setPreferredSize(new Dimension(600,50));
 		_fileButton.setPreferredSize(new Dimension(170,50));
-		_saveButton.setPreferredSize(new Dimension(170,50));
+		//_saveButton.setPreferredSize(new Dimension(170,50)); TODO
 		_downloadButton.setPreferredSize(new Dimension(170,50));
 
 		//Set icons onto top buttons.
 		_fileButton.setIcon(new ImageIcon(new ResImage("folder.png").getResImage()));
-		_saveButton.setIcon(new ImageIcon(new ResImage("floppy.png").getResImage().getScaledInstance(40, 40, 0)));
+		//_saveButton.setIcon(new ImageIcon(new ResImage("floppy.png").getResImage().getScaledInstance(40, 40, 0)));
 		_downloadButton.setIcon(new ImageIcon(new ResImage("download.png").getResImage()));
 
 		//Add top buttons to the top panel.
 		_topButtonPanel.add(_fileButton);
-		_topButtonPanel.add(_saveButton);
+		//_topButtonPanel.add(_saveButton);
 		_topButtonPanel.add(_downloadButton);
 
 		//Set size of the VLC player panel.
@@ -186,7 +186,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		_leftPanel.add(_botButtonPanel, BorderLayout.SOUTH);
 
 		//Add Main frame as listener to all appropriate components.
-		_saveButton.addActionListener(this);
+		//_saveButton.addActionListener(this); TODO
 		_downloadButton.addActionListener(this);
 		
 		_playButton.addActionListener(this);
@@ -318,8 +318,6 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		} else if (ae.getSource() == _downloadButton) {
 			//Bring up new dialog window which handles downloads.
 			new DownloadHandler(VamixGUI.this);
-		} else if (ae.getSource() == _saveButton) {
-			//TODO Save feature:
 		}
 	}
 

@@ -72,6 +72,13 @@ public class VLCPlayerPane extends JPanel {
 	}
 	
 	/**
+	 * Get path to media for playing.
+	 */
+	public String getMediaPath() {
+		return _mediaPath;
+	}
+	
+	/**
 	 * Sets total play time of the currently
 	 * playing file.
 	 * 
@@ -79,6 +86,17 @@ public class VLCPlayerPane extends JPanel {
 	 */
 	public void setPlayTime(int totalPlayTime) {
 		_totalPlayTime = totalPlayTime;
+		
+	}
+	
+	/**
+	 * Return total play time of the currently
+	 * playing file.
+	 * 
+	 * @return totalPlayTime (milliseconds)
+	 */
+	public int getPlayTime() {
+		return _totalPlayTime;
 		
 	}
 	
@@ -100,10 +118,26 @@ public class VLCPlayerPane extends JPanel {
 	 */
 	public void play() {
 		//Ensure that the player isn't muted.
-		_eMPC.getMediaPlayer().mute(false);
+		if (_eMPC.getMediaPlayer().isMute()) {
+			_eMPC.getMediaPlayer().mute(true);
+		} else {
+			_eMPC.getMediaPlayer().mute(false);
+		}
 		
 		//Play from the given mediaPath.
 	    _eMPC.getMediaPlayer().playMedia(_mediaPath);
+	}
+	
+	/**
+	 * Start playing media with the given media 
+	 * path ONLY ONCE.
+	 * 
+	 * Used mainly for previewing audio.
+	 */
+	public void tempPlay(String path) {
+		//Play from the given mediaPath.
+	    _eMPC.getMediaPlayer().playMedia(path);
+	    VamixGUI.getInstance().setPlay();
 	}
 	
 	/**
@@ -170,9 +204,5 @@ public class VLCPlayerPane extends JPanel {
 	public int getLength() {
 		return (int) _eMPC.getMediaPlayer().getLength();
 		
-	}
-
-	public String getMediaPath() {
-		return _mediaPath;
 	}
 }

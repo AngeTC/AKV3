@@ -14,15 +14,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -34,6 +31,9 @@ import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
  * (A singleton class.)
  * 
  * @author acas212
+ * 
+ * Credits to: http://stackoverflow.com/questions/9027317/how-to-convert-milliseconds-to-hhmmss-format
+ * (Converting milliseconds to 'time format' -> (hh:mm:ss))
  */
 @SuppressWarnings("serial")
 public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
@@ -43,7 +43,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	private JTabbedPane _tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	private DirPane _fileTab = new DirPane(new File(System.getProperty("user.dir")));
 	private AudioPane _audioTab = new AudioPane();
-	private JPanel _textTab = new TextPane();
+	private JPanel _textTab = new JPanel();
 
 	private JPanel _leftPanel = new JPanel();
 	
@@ -84,7 +84,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 
 		//Disable resizing.
 		setResizable(false);
-		
+
 		//Set the Layout for the main GUI.
 		setLayout(new FlowLayout(FlowLayout.LEFT,10,10));
 		
@@ -355,8 +355,6 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		
 		_seekBar.setNewTotalLength(totalPlayTime);
 		VLCPlayerPane.getInstance().setPlayTime(totalPlayTime);
-		
-		System.out.println(totalPlayTime);
 	}
 
 	/**
@@ -364,14 +362,6 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		// Set look and feel
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-		} catch (ClassNotFoundException | InstantiationException
-				| IllegalAccessException | UnsupportedLookAndFeelException e1) {
-			JOptionPane.showMessageDialog(null, "Error: " + e1.getMessage());
-		}
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {

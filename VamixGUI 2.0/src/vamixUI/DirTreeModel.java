@@ -45,10 +45,10 @@ public class DirTreeModel implements TreeModel {
 
 	@Override
 	public boolean isLeaf(Object node) {
-		File file = (File)node;
-		String[] children = file.list();
-		if (children == null || children.length == 0) {
-			return true;
+		//return ((File)node).isFile(); 
+		String[] children = ((File)node).list();
+		if (children == null) {
+		return true;
 		}
 		return false;
 	}

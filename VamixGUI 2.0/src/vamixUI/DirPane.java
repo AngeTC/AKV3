@@ -29,7 +29,7 @@ import javax.swing.tree.TreePath;
  */
 @SuppressWarnings("serial")
 public class DirPane extends JPanel {
-	private final JButton _changeDirButton = new JButton("Change directory");
+	private final JButton _changeDirButton = new JButton("Change Dir");
 	private final JButton _refreshButton = new JButton("Refresh");
 	private final JButton _openButton = new JButton("Open");
 	private File _selectedFile = null;

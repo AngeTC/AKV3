@@ -1,17 +1,22 @@
 package vamixUI;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -22,8 +27,10 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SpringLayout;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
+
+import say.swing.JFontChooser;
 
 public class TextPane extends JPanel {
 	// main sections
@@ -76,16 +83,22 @@ public class TextPane extends JPanel {
 	private final JButton _addButton = new JButton("Add");
 	
 	// JTable and associated buttons
-	CaptionTableModel _tableModel = new CaptionTableModel();
+	//CaptionTableModel _tableModel = new CaptionTableModel();
+	String[] fields = {"Text", "Start", "End", "Font", "Colour"};
+
+	Vector<String> columns = new Vector<String>();
+	
+	DefaultTableModel _tableModel = new DefaultTableModel(fields, 0);
 	private final JTable _captionsTable = new JTable(_tableModel);
 	private final JScrollPane _tableScrollPane = new JScrollPane(_captionsTable);
-	private final JButton _playButton = new JButton("Play video with changes");
-	private final JButton _deleteButton = new JButton("Delete");
-	private final JButton _editButton = new JButton("Edit");
+	private final JButton _playButton = new JButton("Play video with captions");
+	private final JButton _deleteButton = new JButton("Delete caption");
+	
+	private String _fontPath = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+	private String _colourHexValue = "0x000000";
 	
 	public TextPane() {
 		setLayout(new BorderLayout());
-		
 		// button and video, NORTH
 		JPanel videoAndButtons = new JPanel();
 		videoAndButtons.setLayout(new GridLayout(2,0));
@@ -108,6 +121,13 @@ public class TextPane extends JPanel {
 		_textOptionPanel.setLayout(new BorderLayout());
 		_textOptionPanel.add(_textScroll, BorderLayout.CENTER);
 		_fontAndColourPanel.setLayout(new GridLayout(0,1));
+		JPanel fontAndSize = new JPanel();
+		GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Font[] fonts = e.getAllFonts();
+		Vector<String> allFonts = new Vector<String>();
+		for (Font f : fonts) {
+			allFonts.add(f.getName());
+		}
 		_fontAndColourPanel.add(_fontButton);
 		_fontAndColourPanel.add(_colourButton);
 		_textOptionPanel.add(_fontAndColourPanel, BorderLayout.EAST);
@@ -173,6 +193,9 @@ public class TextPane extends JPanel {
 		_textAndChangesPanel.add(_changesPanel);
 		
 		add(_textAndChangesPanel, BorderLayout.CENTER);
+		_captionsTable.getColumnModel().getColumn(0).setPreferredWidth(130);
+		_captionsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+		_captionsTable.getColumnModel().getColumn(3).setPreferredWidth(60);
 		
 		//-------END OF LAYING OUT OF COMPONENTS-----------
 		
@@ -198,25 +221,95 @@ public class TextPane extends JPanel {
 			
 		});
 		
+		_deleteButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (_captionsTable.getSelectedRow() != -1) {
+					_tableModel.removeRow(_captionsTable.getSelectedRow());
+				}
+				
+			}
+			
+		});
+		
+		_fontButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFontChooser fc = new JFontChooser();
+				int returnValue = fc.showDialog(null);
+				if (returnValue == JFontChooser.OK_OPTION) {
+					Font selected = fc.getSelectedFont();
+					System.out.println(selected.getName() + ":" + selected.getStyle());
+					
+					FontHandler fh = new FontHandler();
+					String path = FontHandler.getPathForFont(selected.getName(), 0);
+					
+					// set path if font found, else use default
+					if (path != "") {
+						_fontPath = path;
+					}
+					System.out.println(_fontPath);
+				}
+				
+			}
+			
+		});
+		
+		_colourButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Color newColor = JColorChooser.showDialog(
+	                     _fontAndColourPanel,
+	                     "Choose text color",
+	                     Color.BLACK);
+				if (newColor != null) {
+					// doing
+				}
+				
+			}
+			
+		});
+		
 	}
 
 	/**
 	 * Returns string representation of duration time
 	 * @return
 	 */
-	private String getDurationAsString() {
-		String hours = _hoursSpinner1.getValue().toString();
-		String mins = _minsSpinner1.getValue().toString();
-		String secs = _secsSpinner1.getValue().toString();
+	private String getTimeAsString(int spinnerNumber) {
+		String hours = "";
+		String mins = "";
+		String secs = ""; 
+		if (spinnerNumber == 1) {
+			hours = _hoursSpinner1.getValue().toString();
+			mins = _minsSpinner1.getValue().toString();
+			secs = _secsSpinner1.getValue().toString();
+		} else if (spinnerNumber == 2) {
+			hours = _hoursSpinner2.getValue().toString();
+			mins = _minsSpinner2.getValue().toString();
+			secs = _secsSpinner2.getValue().toString();
+		}
 		String time = hours + ":" + mins + ":" + secs;
 		
 		return time;
 	}
 	
-	private String getDurationInSeconds() {
-		int hours = Integer.parseInt( _hoursSpinner1.getValue().toString()) * 360;
-		int mins = Integer.parseInt( _hoursSpinner1.getValue().toString()) * 60;
-		int secs = Integer.parseInt( _hoursSpinner1.getValue().toString());
+	private String getTimeInSeconds(int spinnerNumber) {
+		int hours = 0;
+		int mins = 0;
+		int secs = 0;
+		if (spinnerNumber == 1) {
+			hours = Integer.parseInt( _hoursSpinner1.getValue().toString()) * 360;
+			mins = Integer.parseInt( _minsSpinner1.getValue().toString()) * 60;
+			secs = Integer.parseInt( _secsSpinner1.getValue().toString());
+		} else if (spinnerNumber == 2) {
+			hours = Integer.parseInt( _hoursSpinner2.getValue().toString()) * 360;
+			mins = Integer.parseInt( _minsSpinner2.getValue().toString()) * 60;
+			secs = Integer.parseInt( _secsSpinner2.getValue().toString());
+		}
 		
 		String time = Integer.toString(hours + mins + secs);
 		return time;
@@ -225,14 +318,15 @@ public class TextPane extends JPanel {
 	private void addCaptionToTable() {
 		if (_textInput.getText().length() <= 0) {
 			JOptionPane.showMessageDialog(null, "Please enter some text.");
-		} else if (getDurationAsString().equals("0:0:0")) { // TODO check start and end times
+		} else if (getTimeAsString(1).equals("0:0:0") && getTimeAsString(2).equals("0:0:0")) { // TODO check start and end times
 			JOptionPane.showMessageDialog(null, "Please enter a duration greater than 0.");
+		} else if (Integer.parseInt(getTimeInSeconds(2)) <= Integer.parseInt(getTimeInSeconds(1))) {
+			JOptionPane.showMessageDialog(null, "End time must be greater than start time.");
 		}
 		
-	}
-	
-	private void deleteCaptionFromTable() {
-		// TODO
+		String[] captionData = {_textInput.getText(), getTimeAsString(1), getTimeAsString(2), "Font", "Yellow"};
+		_tableModel.addRow(captionData);
+		
 		
 	}
 	

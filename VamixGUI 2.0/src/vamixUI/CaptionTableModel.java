@@ -69,4 +69,8 @@ public class CaptionTableModel extends AbstractTableModel {
 		setValueAt(text, row, 1);
 		setValueAt(text, row, 2);
 	}
+	
+	public void removeData(int row) {
+		
+	}
 }

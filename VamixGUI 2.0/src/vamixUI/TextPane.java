@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -18,6 +19,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -28,6 +31,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import say.swing.JFontChooser;
@@ -76,14 +81,15 @@ public class TextPane extends JPanel {
 	private final JLabel _timeSep3 = new JLabel(":");
 	private final JLabel _timeSep4 = new JLabel(":");
 	// Image section TODO: may remove
-	private final JTextField _inputVideo = new JTextField("Pick a video to add text to...");
-	private final JButton _chooseImageButton = new JButton("Choose");
+	private final JTextField _inputVideo = new JTextField("Pick a video to add text to");
+	private final JButton _chooseVideoButton = new JButton("Choose");
+	private final JLabel _outputVideoLabel = new JLabel("Output video");
+	private final JTextField _outputVideo = new JTextField("Type in a file name");
 	// Bottom
 	private final JButton _previewTextButton = new JButton("Preview text");
 	private final JButton _addButton = new JButton("Add");
 	
 	// JTable and associated buttons
-	//CaptionTableModel _tableModel = new CaptionTableModel();
 	String[] fields = {"Text", "Start", "End", "Font", "Colour"};
 
 	Vector<String> columns = new Vector<String>();
@@ -108,7 +114,8 @@ public class TextPane extends JPanel {
 		_buttonPanel.add(_exportButton);
 		_inputVideoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		_inputVideoPanel.add(_inputVideo);
-		_inputVideoPanel.add(_chooseImageButton);
+		_inputVideoPanel.add(_chooseVideoButton);
+		_inputVideo.setEditable(false);
 		videoAndButtons.add(_buttonPanel);
 		videoAndButtons.add(_inputVideoPanel);
 		add(videoAndButtons, BorderLayout.NORTH);
@@ -200,16 +207,6 @@ public class TextPane extends JPanel {
 		//-------END OF LAYING OUT OF COMPONENTS-----------
 		
 		//---------START LISTENERS/FUNCTIONALITY-----------
-		_captionsTable.addMouseListener(new MouseAdapter() {
-		    public void mousePressed(MouseEvent me) {
-		        JTable table =(JTable) me.getSource();
-		        Point p = me.getPoint();
-		        int row = table.rowAtPoint(p);
-		        if (me.getClickCount() == 2) {
-		            System.out.println(row + ":" + table.getValueAt(row, 0));
-		        }
-		    }
-		});
 		
 		_addButton.addActionListener(new ActionListener() {
 
@@ -261,14 +258,79 @@ public class TextPane extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Color newColor = JColorChooser.showDialog(
+				Color newColour = JColorChooser.showDialog(
 	                     _fontAndColourPanel,
 	                     "Choose text color",
 	                     Color.BLACK);
-				if (newColor != null) {
-					// doing
+				// convert colour to hex to be used in avconv
+				if (newColour != null) {
+					String hex = Integer.toHexString(newColour.getRGB());
+					_colourHexValue = "0x" + hex.substring(2);
+					System.out.println(_colourHexValue);
 				}
 				
+			}
+			
+		});
+		
+		
+		_playButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (_tableModel.getRowCount() < 1) {
+					JOptionPane.showMessageDialog(null, "No captions added yet.");
+					return;
+				}
+				for (int i = 0; i < _tableModel.getRowCount(); i++) {
+					
+					VideoTextHandler handler = new VideoTextHandler("g.mpg","sdfsdfsdf","1","5", _fontPath , _colourHexValue,"g.mp4", true);
+				}
+				
+			}
+			
+		});
+		
+		_exportButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String outputFile = JOptionPane.showInputDialog(null, "Enter output file name:", "Dialog for Input",
+				        JOptionPane.WARNING_MESSAGE);
+				if (outputFile != null) {
+					String wd = System.getProperty("user.dir");
+					String path = wd + outputFile + ".mp4";
+					File outFile = new File(outputFile);
+					if (outFile.exists()) {
+						int selectedOption = JOptionPane.showConfirmDialog(null, 
+                                "File exists. Overwrite?", 
+                                "Choose", 
+                                JOptionPane.YES_NO_OPTION); 
+						if (selectedOption == JOptionPane.YES_OPTION) {
+							// do command
+							System.out.println("yes");
+						} else {
+							System.out.println("no");
+						}
+					}
+				}
+				
+				
+				
+			}
+			
+		});
+		
+		_chooseVideoButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Videos", "mpg", "mp4", "mkv", "wmv", "rm", "swf"));
+				int returnVal = fc.showOpenDialog(_inputVideoPanel);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					_inputVideo.setText(fc.getSelectedFile().toString());
+				}
 			}
 			
 		});

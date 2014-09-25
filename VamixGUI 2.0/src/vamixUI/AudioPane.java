@@ -46,18 +46,18 @@ public class AudioPane extends JPanel implements ActionListener {
 	private final JLabel _replaceAndOverlayLabel = new JLabel("(For Replace/Overlay Functions)");
 	private final JPanel _audioSelectPanel = new JPanel(new BorderLayout());
 	private final JPanel _audioSelectSubPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-	private final JTextField _chosenAudioInput = new JTextField(29);
+	private final JTextField _chosenAudioInput = new JTextField(25);
 	private final JPanel _audioButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
 	private final JButton _audioFileButton = new JButton("Select Audio File");
 	private final JButton _audioPreviewButton = new JButton("Preview Audio File");
 
 	private final JPanel _outputNamePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 	private final JLabel _outputAudioLabel = new JLabel("Output Audio Name: (For Stripping) ");
-	private final JTextField _chosenAudioName = new JTextField(29);
+	private final JTextField _chosenAudioName = new JTextField(25);
 	private final JLabel _outputVideoLabel = new JLabel("Output Video Name: (For All Functions)");
-	private final JTextField _chosenVideoName = new JTextField(29);
+	private final JTextField _chosenVideoName = new JTextField(25);
 
-	private final JPanel _processPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 15));
+	//private final JPanel _processPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 15));
 	private final JProgressBar _processBar = new JProgressBar();
 
 	private final JPanel _bottomButtonPanel = new JPanel(new BorderLayout());
@@ -423,15 +423,15 @@ public class AudioPane extends JPanel implements ActionListener {
 		_stripPanel.setPreferredSize(new Dimension(385, 100));
 		_stripSubPanel.setPreferredSize(new Dimension(260, 70));
 
-		_audioSelectPanel.setPreferredSize(new Dimension(385, 100));
+		_audioSelectPanel.setPreferredSize(new Dimension(385, 120));
 
-		_outputNamePanel.setPreferredSize(new Dimension(385, 120));
+		_outputNamePanel.setPreferredSize(new Dimension(385, 140));
 
-		_processPanel.setPreferredSize(new Dimension(385, 60));
+		//_processPanel.setPreferredSize(new Dimension(385, 30));
 		_processBar.setPreferredSize(new Dimension(385, 30));
 
-		_bottomButtonPanel.setPreferredSize(new Dimension(385, 110));
-		_bottomSubButtonPanel.setPreferredSize(new Dimension(385, 60));
+		_bottomButtonPanel.setPreferredSize(new Dimension(385, 100));
+		_bottomSubButtonPanel.setPreferredSize(new Dimension(385, 40));
 
 		//Add and construct strip options panel.
 		add(_stripPanel);
@@ -463,8 +463,9 @@ public class AudioPane extends JPanel implements ActionListener {
 		_outputNamePanel.add(_chosenVideoName);
 
 		//Add process bar.
-		add(_processPanel);
-		_processPanel.add(_processBar);
+		//add(_processPanel);
+		//_processPanel.
+		add(_processBar);
 		_processBar.setString("No Tasks Being Performed");
 		_processBar.setStringPainted(true);
 

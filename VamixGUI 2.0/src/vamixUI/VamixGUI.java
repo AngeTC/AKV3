@@ -347,7 +347,7 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 		_playButton.setSelected(true);
 		_isMediaLoaded = true;
 
-		//Must wait a wile
+		//Must wait a while
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {

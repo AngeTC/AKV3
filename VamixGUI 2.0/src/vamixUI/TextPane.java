@@ -2,6 +2,7 @@ package vamixUI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -12,6 +13,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -19,11 +22,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -57,9 +63,8 @@ public class TextPane extends JPanel {
 	private final JPanel _inputVideoPanel = new JPanel();
 	
 	// button panel
-	private final JButton _loadButton = new JButton("Load");
-	private final JButton _saveButton = new JButton("Save project");
-	private final JButton _exportButton = new JButton("Export");
+	private final JButton _loadButton = new JButton("Load data");
+	private final JButton _saveButton = new JButton("Save data");
 	
 	// Add text panel components
 	
@@ -86,22 +91,33 @@ public class TextPane extends JPanel {
 	private final JLabel _outputVideoLabel = new JLabel("Output video");
 	private final JTextField _outputVideo = new JTextField("Type in a file name");
 	// Bottom
-	private final JButton _previewTextButton = new JButton("Preview text");
+	private final JButton _previewTextButton = new JButton("Preview Text");
 	private final JButton _addButton = new JButton("Add");
+	
+	private final static JProgressBar progressBar = new JProgressBar();
+	private final JButton cancel = new JButton("Cancel");
+
 	
 	// JTable and associated buttons
 	String[] fields = {"Text", "Start", "End", "Font", "Colour"};
 
 	Vector<String> columns = new Vector<String>();
 	
-	DefaultTableModel _tableModel = new DefaultTableModel(fields, 0);
+	DefaultTableModel _tableModel = new DefaultTableModel(fields, 0) {
+		@Override
+		public boolean isCellEditable(int row, int column) {
+	        return false;
+	    }
+	};
 	private final JTable _captionsTable = new JTable(_tableModel);
 	private final JScrollPane _tableScrollPane = new JScrollPane(_captionsTable);
-	private final JButton _playButton = new JButton("Play video with captions");
-	private final JButton _deleteButton = new JButton("Delete caption");
+	private final JButton _exportingButton = new JButton("Export");
+	private final JButton _deleteButton = new JButton("Delete Caption");
 	
 	private String _fontPath = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
 	private String _colourHexValue = "0x000000";
+	
+	boolean canDraw;
 	
 	public TextPane() {
 		setLayout(new BorderLayout());
@@ -111,7 +127,6 @@ public class TextPane extends JPanel {
 		_buttonPanel.setLayout(new GridLayout(1,0));
 		_buttonPanel.add(_loadButton);
 		_buttonPanel.add(_saveButton);
-		_buttonPanel.add(_exportButton);
 		_inputVideoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		_inputVideoPanel.add(_inputVideo);
 		_inputVideoPanel.add(_chooseVideoButton);
@@ -191,7 +206,7 @@ public class TextPane extends JPanel {
 		_editAndDeletePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		_editAndDeletePanel.add(_deleteButton);
 		_playPanel.setLayout(new GridLayout(1,1));
-		_playPanel.add(_playButton);
+		_playPanel.add(_exportingButton);
 		_tableButtonsPanel.add(_editAndDeletePanel);
 		_tableButtonsPanel.add(_playPanel);
 	
@@ -199,12 +214,15 @@ public class TextPane extends JPanel {
 		// add changes panel
 		_textAndChangesPanel.add(_changesPanel);
 		
+		
 		add(_textAndChangesPanel, BorderLayout.CENTER);
 		_captionsTable.getColumnModel().getColumn(0).setPreferredWidth(130);
 		_captionsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
 		_captionsTable.getColumnModel().getColumn(3).setPreferredWidth(60);
+	
 		
 		//-------END OF LAYING OUT OF COMPONENTS-----------
+		
 		
 		//---------START LISTENERS/FUNCTIONALITY-----------
 		
@@ -239,8 +257,7 @@ public class TextPane extends JPanel {
 				if (returnValue == JFontChooser.OK_OPTION) {
 					Font selected = fc.getSelectedFont();
 					System.out.println(selected.getName() + ":" + selected.getStyle());
-					
-					FontHandler fh = new FontHandler();
+				
 					String path = FontHandler.getPathForFont(selected.getName(), 0);
 					
 					// set path if font found, else use default
@@ -274,24 +291,69 @@ public class TextPane extends JPanel {
 		});
 		
 		
-		_playButton.addActionListener(new ActionListener() {
+		_exportingButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
 				if (_tableModel.getRowCount() < 1) {
 					JOptionPane.showMessageDialog(null, "No captions added yet.");
 					return;
+				} else if (_inputVideo.getText().equals("Pick a video to add text to")) {
+					JOptionPane.showMessageDialog(null, "Please choose a valid video file");
+					return;
+				} else if (_captionsTable.getSelectedRow() == -1) {
+					JOptionPane.showMessageDialog(null, "Please select caption from text log.");
+					return;
+				} 
+				
+				String outputFile = JOptionPane.showInputDialog(null, "Enter output file name:", "Dialog for Input",
+				        JOptionPane.WARNING_MESSAGE);
+				if (outputFile != null) {
+					String wd = System.getProperty("user.dir");
+					String path = wd + outputFile + ".mp4";
+					File outFile = new File(outputFile);
+					if (outFile.exists()) {
+						int selectedOption = JOptionPane.showConfirmDialog(null, 
+                                "File exists. Overwrite?", 
+                                "Choose", 
+                                JOptionPane.YES_NO_OPTION); 
+						if (selectedOption == JOptionPane.YES_OPTION) {
+							canDraw = true;
+							//System.out.println("yes");
+						} else {
+							canDraw = false;
+							//System.out.println("no");
+						}
+					} else {
+						canDraw = true;
+					}
 				}
-				for (int i = 0; i < _tableModel.getRowCount(); i++) {
+				
+				if (canDraw && _captionsTable.getSelectedRow() != -1) {
+					int row = _captionsTable.getSelectedRow();
+					String stringCommand = VideoTextHandler.makeCommand(_inputVideo.getText(), _tableModel.getValueAt(row, 0).toString(), getTimeInSeconds(_tableModel.getValueAt(row, 1).toString()), getTimeInSeconds(_tableModel.getValueAt(row, 2).toString()),
+							_fontPath, _colourHexValue, outputFile + ".mp4");
+						new VideoTextHandler(stringCommand);
+						
+						//Create Jdialog with progress bar.
+						final JComponent[] components = new JComponent[] {
+								progressBar,
+								cancel
+						};
+						progressBar.setIndeterminate(true);
+						progressBar.setString("Processing");
+						progressBar.setStringPainted(true);
+						JOptionPane.showMessageDialog(null, components, "Progress", JOptionPane.PLAIN_MESSAGE);
+				}
 					
-					VideoTextHandler handler = new VideoTextHandler("g.mpg","sdfsdfsdf","1","5", _fontPath , _colourHexValue,"g.mp4", true);
-				}
+					
 				
 			}
 			
 		});
 		
-		_exportButton.addActionListener(new ActionListener() {
+		/*_exportButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -314,28 +376,119 @@ public class TextPane extends JPanel {
 						}
 					}
 				}
-				
-				
-				
 			}
 			
-		});
+		});*/
 		
 		_chooseVideoButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc = new JFileChooser();
-				fc.addChoosableFileFilter(new FileNameExtensionFilter("Videos", "mpg", "mp4", "mkv", "wmv", "rm", "swf"));
-				int returnVal = fc.showOpenDialog(_inputVideoPanel);
+				int returnVal = fc.showOpenDialog(null);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					_inputVideo.setText(fc.getSelectedFile().toString());
+					// check if chosen file is a video
+					String type;
+					try {
+						type = Files.probeContentType(fc.getSelectedFile().toPath());
+						if (type.contains("video")) {
+							_inputVideo.setText(fc.getSelectedFile().toString());
+						} else {
+							JOptionPane.showMessageDialog(null, "Invalid file chosen.");
+							return;
+						}
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+					
 				}
 			}
 			
 		});
 		
+		_loadButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showOpenDialog(null);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					String type;
+					try {
+						type = Files.probeContentType(fc.getSelectedFile().toPath());
+						if (type.contains("text")) {
+							System.out.println("GOOD");
+							// load stuff
+						} else {
+							JOptionPane.showMessageDialog(null, "Invalid file chosen.");
+							return;
+						}
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				
+			}
+			
+		});
+		
+		_saveButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String outputFile = JOptionPane.showInputDialog(null, "Enter output file name:", "Dialog for Input",
+				        JOptionPane.WARNING_MESSAGE);
+				if (outputFile != null) {
+					String wd = System.getProperty("user.dir");
+					String path = wd + outputFile + ".txt";
+					File outFile = new File(outputFile);
+					if (outFile.exists()) {
+						int selectedOption = JOptionPane.showConfirmDialog(null, 
+                                "File exists. Overwrite?", 
+                                "Choose", 
+                                JOptionPane.YES_NO_OPTION); 
+						if (selectedOption == JOptionPane.YES_OPTION) {
+							// save as text file
+							System.out.println("yes");
+						} else {
+							System.out.println("no");
+						}
+					}
+				}
+				
+			}
+			
+		});
+		
+		_previewTextButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String stringCommand = VideoTextHandler.makeCommand(_inputVideo.getText(), _textInput.getText(), getTimeInSeconds(1), getTimeInSeconds(2),
+						_fontPath, _colourHexValue, "preview");
+				new VideoTextHandler(stringCommand);
+				
+				
+			}
+			
+		});
+		
+		cancel.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				VideoTextHandler.cancelTask();
+				
+			}
+			
+		});
+		
 	}
+	
+	
 
 	/**
 	 * Returns string representation of duration time
@@ -377,18 +530,43 @@ public class TextPane extends JPanel {
 		return time;
 	}
 	
+	public static String getTimeInSeconds(String time) {
+		String[] times = time.split(":");
+		
+		int hours = Integer.parseInt(times[0]);
+		int mins = Integer.parseInt(times[1]);
+		int secs = Integer.parseInt(times[2]);
+		
+		hours = hours * 360;
+		mins = mins * 60;
+		
+		String outTime = Integer.toString(hours + mins + secs);
+		return outTime;
+	}
+	
 	private void addCaptionToTable() {
 		if (_textInput.getText().length() <= 0) {
 			JOptionPane.showMessageDialog(null, "Please enter some text.");
+			return;
 		} else if (getTimeAsString(1).equals("0:0:0") && getTimeAsString(2).equals("0:0:0")) { // TODO check start and end times
 			JOptionPane.showMessageDialog(null, "Please enter a duration greater than 0.");
+			return;
 		} else if (Integer.parseInt(getTimeInSeconds(2)) <= Integer.parseInt(getTimeInSeconds(1))) {
 			JOptionPane.showMessageDialog(null, "End time must be greater than start time.");
+			return;
 		}
 		
-		String[] captionData = {_textInput.getText(), getTimeAsString(1), getTimeAsString(2), "Font", "Yellow"};
+		String[] captionData = {_textInput.getText(), getTimeAsString(1), getTimeAsString(2), _fontPath, _colourHexValue};
 		_tableModel.addRow(captionData);
 		
+		
+	}
+
+
+
+	public static void finishProgressBar() {
+		progressBar.setIndeterminate(false);
+		progressBar.setString("Finished");
 		
 	}
 	

@@ -1,5 +1,7 @@
 package vamixUI;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,37 +16,45 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
-public class VideoTextHandler extends JDialog {
-	private JProgressBar _progress = new JProgressBar();
-	private JButton _cancel = new JButton("Cancel");
-	private AvconvTask _task;
+public class VideoTextHandler {
+	private static AvconvTask _task;
 
-	private String makeCommand(String videoPath, String text, String start, String end, String fontPath, String colour, String outputFile, boolean isPreview) {
+	public static String makeCommand(String videoPath, String text, String start, String end, String fontPath, String colour, String outputFile) {
 		String command = "avconv -i " + videoPath + " -vf " + "drawtext=\"fontfile='" + fontPath 
 				+ "':fontcolor=" + colour + ":text='" + text + "':draw='gt(t," + start + ")*lt(t," + end + ")'\" " + outputFile;
 		System.out.println(command);
 		return command;
 	}
 	
-	public VideoTextHandler(String videoPath, String text, String start, String end, String fontPath, String colour, String outputFile, boolean isPreview) {
-		String cmd = makeCommand(videoPath, text, start, end, fontPath, colour, outputFile, isPreview);
+	public VideoTextHandler(String cmd) {
 		_task = new AvconvTask(cmd);
 		_task.execute();
-		_progress.setString("Processing...");
-		final JComponent[] components = new JComponent[] {
-				_progress,
-				_cancel
-		};
-		JOptionPane.showMessageDialog(null, components, "Progress", JOptionPane.PLAIN_MESSAGE);
 	}
-	
+
+	//_cancel.addActionListener(new ActionListener() {
+
+	//@Override
+	//public void actionPerformed(ActionEvent e) {
+	//VideoTextHandler.this.dispose();
+
+	//	}
+
+	//});
+	//setVisible(true);
+
+
+
 	class AvconvTask extends SwingWorker<Void, String> {
 
 		private String _cmd = "";
 		private Process _process = null;
-		
-		
+
+		public void setCmd(String cmd) {
+			_cmd = cmd;
+		}
 		public AvconvTask(String cmd) {
 			_cmd = cmd;
 		}
@@ -54,11 +64,11 @@ public class VideoTextHandler extends JDialog {
 		 */
 		@Override
 		protected Void doInBackground() throws Exception {
-			
+
 			ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", _cmd);
-			
+
 			try {		
-				//Create and run new process for wget.
+				//Create and run new process.
 				builder.redirectErrorStream(true);
 
 				_process = builder.start();
@@ -67,18 +77,15 @@ public class VideoTextHandler extends JDialog {
 				BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
 				String line = null;
 
-				//New list for download output.
+				//New list for output.
 				ArrayList<String> avconvOutput = new ArrayList<String>();
 
 				while ((line = stdoutBuffered.readLine()) != null ) {
-					// if process is cancelled, finish
+					// if process is cancelled, destroy process
 					if (isCancelled()) {
 						_process.destroy();
-						done();
-					
-					//Else, run publish() and add line to the output list.
+						
 					} else {
-						publish(line);
 						avconvOutput.add(line);
 					}
 				}
@@ -96,30 +103,82 @@ public class VideoTextHandler extends JDialog {
 			return null;
 		}
 
-		/**
-		 * Show animation while process isn't finished.
-		 */
-		@Override
-		protected void process(List<String> chunks) {
-
-			_progress.setIndeterminate(true);
-				
-		} 
-
 		protected void done() {
 			try {
 				//If cancelled, display 'cancelled' message.
 				if (isCancelled()) {
 					JOptionPane.showMessageDialog(null, "Aborted.");
 
-				//If no errors occurred, display 'complete' status.
+					//If no errors occurred, display 'complete' status.
 				} else if (_process.waitFor() == 0) {
-					_progress.setValue(100);
-					_progress.setString("Finished!");
+					
+					//If no errors occurred, display 'complete' status.
+					TextPane.finishProgressBar();
+					System.out.println("finished");
 				}
-			} catch (InterruptedException e) {
-				
-			}
+			} catch (InterruptedException e) {}
 		}
 	}
+
+	public static void cancelTask() {
+		_task.cancel(true);
+		
+	}
+
+/*	class BigTask extends SwingWorker<Void, String> {
+
+		private TableModel tableModel;
+		private String videoPath;
+
+
+		public BigTask(TableModel _tableModel, String _videoPath) {
+			tableModel = _tableModel;
+			videoPath = _videoPath;
+		}
+
+		*//**
+		 * Runs the background process for 'avconv'.
+		 *//*
+		@Override
+		protected Void doInBackground() throws Exception {
+
+			int outputCount = 0;
+			String input = videoPath;
+			String defOutput = System.getProperty("user.dir") + "/" + "out";
+			String output = "";
+			
+			for (int i = 0; i < tableModel.getRowCount(); i++) {
+				output = defOutput + outputCount + ".mp4";
+				String cmd = VideoTextHandler.makeCommand(input, tableModel.getValueAt(i, 0).toString(), TextPane.getTimeInSeconds(tableModel.getValueAt(i, 1).toString()), TextPane.getTimeInSeconds(tableModel.getValueAt(i, 2).toString()),
+						tableModel.getValueAt(i, 3).toString(),tableModel.getValueAt(i, 4).toString(), output);
+				_task = new AvconvTask(cmd);
+				_task.execute();
+				while(!_task.isDone()) {
+					if (isCancelled()) {
+						_task.cancel(true);
+						return null;
+					}
+				}
+
+				input = output;
+				outputCount++;
+
+			}
+
+			return null;
+		}
+
+		protected void done() {
+				//If cancelled, display 'cancelled' message.
+				if (isCancelled()) {
+					JOptionPane.showMessageDialog(null, "Aborted.");
+
+					//If no errors occurred, display 'complete' status.
+					TextPane.finishProgressBar();
+					
+					System.out.println("finished");
+				}
+
+			}
+		}*/
 }

@@ -566,8 +566,15 @@ public class AudioPane extends JPanel implements ActionListener {
 						"stripping. Please select a combination from the two provided " +
 						"checkboxes.");
 
+			} 
+			//If file has no audio stream, send error.
+			else if (!VLCPlayerPane.getInstance().hasAudioStream()) {
+				JOptionPane.showMessageDialog(null, "Error: Video has no audio stream. No " +
+						"audio can be stripped.");
+				
+			} 
 			//Handle special case when both options are selected.
-			} else if (_removeAudioOnVideo.isSelected() && _haveAudioOutput.isSelected()) {
+			else if (_removeAudioOnVideo.isSelected() && _haveAudioOutput.isSelected()) {
 				boolean validAudio = true;
 				boolean validVideo = true;
 

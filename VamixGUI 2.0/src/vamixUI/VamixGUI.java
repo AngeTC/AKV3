@@ -133,6 +133,9 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 				_playerPanel.stop();
 			}
 		});
+		
+		//Ensure player is unmuted.
+		_playerPanel.unMute();
 
 		//Set size and layout of the bottom button panel.
 		_botButtonPanel.setLayout(new BorderLayout(10,10));
@@ -344,18 +347,22 @@ public class VamixGUI extends JFrame implements ActionListener, ChangeListener {
 	 * and changing the appropriate booleans.
 	 */
 	public void setPlay() {
+		//Set play button as selected.
 		_playButton.setSelected(true);
 		_isMediaLoaded = true;
 
-		//Must wait a wile
+		//Must wait a while before obtaining length of media file.
 		try {
+			//Wait for short period.
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
+		//Get total playtime of media file.
 		int totalPlayTime = _playerPanel.getLength();
 
+		//Set new length of seek bar with new playtime.
 		_seekBar.setNewTotalLength(totalPlayTime);
 		VLCPlayerPane.getInstance().setPlayTime(totalPlayTime);
 	}

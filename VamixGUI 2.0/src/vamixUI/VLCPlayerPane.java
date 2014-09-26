@@ -17,6 +17,8 @@ import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 /**
  * Panel which contains the Media Player. 
  * (A singleton class.)
+ * 
+ * @author acas212 & kxie094
  */
 @SuppressWarnings("serial")
 public class VLCPlayerPane extends JPanel {
@@ -117,7 +119,7 @@ public class VLCPlayerPane extends JPanel {
 	 * Start playing media with the given media path.
 	 */
 	public void play() {
-		//Ensure that the player isn't muted.
+		//Ensure that the player stays muted when muted.
 		if (_eMPC.getMediaPlayer().isMute()) {
 			_eMPC.getMediaPlayer().mute(true);
 		} else {
@@ -204,5 +206,26 @@ public class VLCPlayerPane extends JPanel {
 	public int getLength() {
 		return (int) _eMPC.getMediaPlayer().getLength();
 		
+	}
+
+	/**
+	 * Mute function specifically used to
+	 * unmute.
+	 */
+	public void unMute() {
+		_eMPC.getMediaPlayer().mute(false);
+		
+	}
+
+	public boolean hasAudioStream() {
+		int audioTracks = _eMPC.getMediaPlayer().getAudioTrackCount();
+		
+		System.out.println(_eMPC.getMediaPlayer().getAudioTrackCount());
+		
+		if (audioTracks == 0) {
+			return false;
+		}
+		
+		return true;
 	}
 }
